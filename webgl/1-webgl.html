@@ -1,0 +1,54 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-19 18:19:46
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+  <div style="padding: 20px;">
+    <p>
+      webgl是一种3D绘图协议，衍生于 OpenGL ES2.0，可以结合 Html5 和 JavaScript 在网页上绘制和渲染二/三维图形
+    </p>
+    优势：
+    <p>
+      1、内嵌在浏览器中，不需要安装任何插件即可运⾏
+    </p>
+    <p>
+      2、只需要⼀个⽂本编辑器和浏览器，就可以编写三维图形程序；
+    </p>
+    <p>
+      3、学习和使用比较简单
+    </p>
+  </div>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 清空canvas原来的颜色 设置新的颜色，取值区间 0.0-1.0
+  gl.clearColor(1.0,0.0,0.0,1.0) // red 1.0  green 0.0  blue 0.0 alpha 1.0
+  /*
+  * gl.clear清空canvas： 
+    gl.COLOR_BUFFER_BIT 清空颜色缓存
+    gl.DEPTH_BUFFER_BIT 清空深度缓冲区   gl.clear(gl.DEPTH_BUFFER_BIT) 和 gl.clearDepth(1.0)
+    gl.STENCIL_BUFFER_BIT 清空模板缓冲区  gl.clear(gl.STENCIL_BUFFER_BIT) 和 gl.clearStencil(0)
+
+    gl.clearColor和 gl.clear搭配使用
+  */ 
+
+
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+</script>
+

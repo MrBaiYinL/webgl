@@ -1,0 +1,108 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-15 11:24:32
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>绘制一个点</title>
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+    }
+    #canvas {
+      background-color: gray;
+    }
+    body::after{
+      content: ' ';
+      display: block;
+      width: 1px;
+      height: 400px;
+      background: red;
+      position: absolute;
+      top: 0;
+      left: 200px;
+    }
+    body::before{
+      content: ' ';
+      display: block;
+      width: 400px;
+      height: 1px;
+      background: red;
+      position: absolute;
+      top: 200px;
+      left: 0;
+    }
+   
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  /*
+   着色器就是让开发者自己去编写一段程序，用来代替固定渲染管线，来处理图像的渲染
+
+   顶点着色器：顶点是指⼆维三维空间中的⼀个点，可以理解为一个个坐标，就是通过计算获取位置信息
+   片元着色器：可以理解为一个个像素，通过计算获取颜色信息
+  */ 
+
+  // 创建顶点着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    // 必须要存在 main 函数 注意在main函数中每行结尾必须加分号，不然会报错
+    void main() {
+      // 要绘制的点的坐标 表示坐标信息： x,y,z,w(齐次坐标 x/w y/w z/w)
+      gl_Position = vec4(0.0,0.0,0.0,1.0);
+      // 点的大小
+      gl_PointSize = 30.0;
+    }
+  `
+ 
+  // 创建片元着色器源码
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      // 当前绘制点的颜色  表示颜色信息： r,g,b,a
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `
+
+  // 创建着色器
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+    gl.shaderSource(vertexShader, VERTEX_SHADER_SOURCE) // 指定顶点着色器的源码
+    gl.shaderSource(fragmentShader, FRAGMENT_SHADER_SOURCE) // 指定片元着色器的源码
+    
+    // 编译着色器
+    gl.compileShader(vertexShader)
+    gl.compileShader(fragmentShader)
+    
+    // 创建一个程序对象
+    const program = gl.createProgram();
+    // 制定使用哪个着色器
+    gl.attachShader(program, vertexShader)
+    gl.attachShader(program, fragmentShader)
+    // 关联webgl与js
+    gl.linkProgram(program)
+    // 使用
+    gl.useProgram(program)
+
+    // 执行绘制, 绘制的图形是什么， 从哪个点开始，   使用几个顶点
+    gl.drawArrays(gl.POINTS, 0, 1)
+    // 绘制线段最少需要有两个点，
+    gl.drawArrays(gl.LINES, 0, 1); 
+    // 三角形 至少3个点
+    gl.drawArrays(gl.TRIANGLES, 0, 1); 
+
+</script>

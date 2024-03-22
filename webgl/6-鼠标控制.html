@@ -1,0 +1,118 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-15 17:01:31
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    // 只传递顶点数据
+    attribute vec4 aPosition;
+    void main() {
+      gl_Position = aPosition; // vec4(0.0,0.0,0.0,1.0)
+      gl_PointSize = 10.0;
+    }
+  `;
+
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `;
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+
+  // 初始化绘制
+  gl.vertexAttrib1f(aPosition, 0.0)
+  gl.drawArrays(gl.POINTS, 0, 1);
+
+  const points = []
+  // ctx.onclick ctx.onmousemove
+  ctx.onclick = function(ev) {
+    // 鼠标点击的坐标
+    const x = ev.clientX
+    const y = ev.clientY
+    // canvas的位置坐标  ctx.offsetTop, ctx.offsetLeft
+    // console.log('----位置', ctx.offsetTop, ctx.offsetLeft, x, y)
+    // 当前元素的位置信息（点击的位置在画布中的位置） 
+    const domPosition = ev.target.getBoundingClientRect();
+    const domx = x - domPosition.left
+    const domy = y - domPosition.top;
+    console.log('----画布位置',domPosition, domx, domy)
+
+    /* 归一化处理
+    0 200 400
+
+    -1 0 1
+
+    -200 0 200
+
+    -1 0 1
+
+    需要先 -200 （当前画布的宽度） 然后再 除以 200
+
+    1 0 -1
+
+    0 200 400
+
+    200 0 -200 / 200
+
+    需要先让 200 减这个数，然后再 / 200
+
+    * */
+    const halfWidth = ctx.offsetWidth / 2
+    const halfHeight = ctx.offsetHeight / 2
+
+    const clickX = (domx - halfWidth) / halfWidth
+    const clickY = (halfHeight - domy) / halfHeight
+
+    console.log('----归一化',clickX, clickY)
+    points.push({
+      clickX, clickY
+    })
+
+    // ctx.onmousemove 鼠标跟随
+    gl.vertexAttrib2f(aPosition, points[points.length-1].clickX, points[points.length-1].clickY)
+    gl.drawArrays(gl.POINTS, 0, 1);
+    
+    // ctx.onmousemove 画笔功能
+    // for (let i = 0; i < points.length; i++) {
+    //   gl.vertexAttrib2f(aPosition, points[i].clickX, points[i].clickY)
+    //   gl.drawArrays(gl.POINTS, 0, 1);
+    // }
+  }
+
+  // 流程： 添加点击事件 -》获取点击坐标 -》转为canvas坐标 -》转为webgl坐标 -》绘制
+</script>

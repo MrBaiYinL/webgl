@@ -1,0 +1,38 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-18 15:52:53
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+  <div style="padding: 20px;">
+    <p>
+      canvas  是HTML5新增的一个 DOM 元素
+      用途：显示 二维 和 三维 的图像
+    </p>
+    <p>
+      绘制：二维图形可以使用 （ Canvas API 或 WebGL API）     
+              三维图形使用 WebGL API
+    </p>
+  </div>
+</body>
+</html>
+
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const c = ctx.getContext('2d')
+
+  c.fillStyle = 'red'
+  c.fillRect(10,10,100,100)
+
+</script>

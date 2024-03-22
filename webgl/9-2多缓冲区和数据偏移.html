@@ -1,0 +1,81 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-15 18:03:48
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="../utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  此浏览器不支持canvas
+</canvas>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    attribute vec4 aPosition;
+    attribute float aPointSize;
+    void main() {
+      gl_Position = aPosition;
+      gl_PointSize = aPointSize;
+    }
+  `; // 顶点着色器
+
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `; // 片元着色器
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+  const aPointSize = gl.getAttribLocation(program, 'aPointSize');
+
+  const points = new Float32Array([
+    -0.5, -0.5, 10.0, // 大小设为 10.0，尺寸信息
+    0.5, -0.5, 20.0, // 大小设为 20.0
+    0.0,  0.5, 30.0, // 大小设为 30.0
+  ])
+
+  // 创建缓冲区，并绑定数据
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  // 获取每个点占据的字节数
+  const BYTES = points.BYTES_PER_ELEMENT;
+
+  // 给 attribute 赋值位置信息
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 3, 0); // BYTES * 3： 两个相邻顶点（两个数据）之间的字节数
+  gl.enableVertexAttribArray(aPosition)
+
+  // 给 attribute 赋值尺寸信息
+  gl.vertexAttribPointer(aPointSize, 1, gl.FLOAT, false, BYTES * 3, BYTES * 2);// BYTES * 2：数据偏移量，每个数据越过前面的位置信息，取尺寸信息
+  gl.enableVertexAttribArray(aPointSize)
+
+  gl.drawArrays(gl.POINTS, 0, 3);
+</script>

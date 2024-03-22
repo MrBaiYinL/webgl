@@ -1,0 +1,97 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-17 17:21:09
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="../utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+  <div style="padding: 20px;">
+    <p>正射投影：平行投影，投影后的大小、尺寸不变。因为 正射投影是所有的物体投影线都垂直于最终的绘图表面</p>
+    <p>正射投影就是把可视空间内的坐标映射到 x [-1,1], y [-1,1], z [-1,1] 的区间内</p>
+  </div>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    attribute vec4 aPosition;
+    uniform mat4 mat;
+    void main() {
+      gl_Position = mat * aPosition;
+      gl_PointSize = 10.0;
+    }
+  `; // 顶点着色器
+
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `; // 片元着色器
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+  const mat = gl.getUniformLocation(program, 'mat');
+
+  const points = new Float32Array([
+    -0.5, -0.5,
+     0.5, -0.5,
+     0.0,  0.5,
+  ])
+
+  const buffer = gl.createBuffer();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+  gl.enableVertexAttribArray(aPosition)
+
+  let eyey = -0.1;
+  function animation() {
+    eyey += 0.01;
+    if (eyey > 1) {
+      eyey = -0.1;
+    }
+
+    const vm = getViewMatrix(0.0,eyey,0.2,0.0,0.0,0.0,0.0,0.6,0.0);
+    const ortho = getOrtho(-1,1,1,-1,0,20); // 获取正射投影矩阵
+    // const matrix = getTranslateMatrix(x, x);
+    // gl.vertexAttrib1f(aTranslate, x);
+    gl.uniformMatrix4fv(mat, false, mixMatrix(vm, ortho));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    requestAnimationFrame(animation);
+  }
+
+  animation()
+
+</script>

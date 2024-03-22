@@ -1,0 +1,85 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-17 10:41:20
+ * @Description:  彩色三角形
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  此浏览器不支持canvas
+</canvas>
+<div>
+  <p>varying申明变量，顶点着色器和片元着色器需要同时声明，并且名称保持一致</p>
+  <p>作用式从顶点着色器向片元着色器传递一些数据</p>
+  <img src="./18-执行流程.png" alt="" srcset="">
+</div>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    attribute vec4 aPosition;
+
+    varying vec4 vColor; // 申明变量
+
+    void main() {
+      vColor = aPosition; // 赋值
+
+      gl_Position = aPosition;
+    }
+  `; // 顶点着色器
+
+  const FRAGMENT_SHADER_SOURCE = `
+    precision lowp float;// 指定精度
+    varying vec4 vColor; // 申明变量，顶点着色器和片元着色器需要同时声明，并且名称保持一致
+
+    void main() {
+      gl_FragColor = vColor;
+    }
+  `; // 片元着色器
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+
+  const points = new Float32Array([
+    -0.5, -0.5,
+    0.5, -0.5,
+    0.0,  0.5,
+  ])
+
+  const buffer = gl.createBuffer();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+  gl.enableVertexAttribArray(aPosition)
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+</script>

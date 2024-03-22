@@ -1,0 +1,62 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-15 11:40:13
+ * @Description:  
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  此浏览器不支持canvas
+</canvas>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+  const gl = ctx.getContext('webgl')
+  // 着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    // 声明变量 
+    attribute vec4 aPosition; // 限定符-类型-变量名， 不能在片元着色器中使用
+    // 只传递顶点数据
+    void main() {
+      gl_Position = aPosition; // 默认值：vec4(0.0,0.0,0.0,1.0)
+      gl_PointSize = 30.0;
+    }
+  `;
+
+  const FRAGMENT_SHADER_SOURCE = `
+    // 片元着色器
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `;
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  // 获取attribute变量，且必须在initShader之后，因为要用 program
+  const aPosition = gl.getAttribLocation(program, 'aPosition');// 程序对象-要获取存储地址的变量名称，返回变量的存储地址
+
+  // 给aPosition进行赋值，变量的存储位置 - 传入的四个分量的值
+  // gl.vertexAttrib4f(aPosition, 0.5,0.5,0.0,1.0)
+  // gl.vertexAttrib3f(aPosition, 0.5,0.5,0.0)
+  // gl.vertexAttrib2f(aPosition, 0.5,0.5)
+  gl.vertexAttrib1f(aPosition, 0.5)
+  gl.drawArrays(gl.POINTS, 0, 1);
+
+  // let x = 0;
+  // setInterval(() => {
+  //   x += 0.1;
+  //   if (x > 1.0) {
+  //     x = 0;
+  //   }
+  //   gl.vertexAttrib1f(aPosition, x)
+  //   gl.drawArrays(gl.POINTS, 0, 1);
+  // }, 200)
+</script>

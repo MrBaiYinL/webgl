@@ -1,0 +1,108 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-15 18:00:17
+ * @Description:  缓冲区对象
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+  <div style="padding: 10px;">
+    <h5>缓冲区对象是WebGL系统中的一块内存区域，可以一次性地向缓冲区对象中填充大量的顶点数据，然后将这些数据保存在其中，供顶点着色器使用</h5>
+  </div>
+  <div style="padding: 10px;">
+    <h5>类型化数组</h5>
+    在 webgl 中，需要处理⼤量的相同类型数据，所以引入类型化数组，这样程序就可以预知到数组中的数据类型， 提⾼性能。<br />
+    Int8Array: 8位整型<br />
+    UInt8Array: 8位无符号整型<br />
+    Int16Array: 16位整型<br />
+    UInt16Array:16位无符号整型<br />
+    Int32Array:32位整型<br />
+    UInt32Array:32位无符号整型<br />
+    Float32Array:单精度32位浮点型<br />
+    Float64Array:双精度64位浮点型<br />
+  </div>
+  <canvas id="canvas" width="400" height="400">
+    此浏览器不支持canvas
+  </canvas>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    // 只传递顶点数据
+    attribute vec4 aPosition;
+    void main() {
+      gl_Position = aPosition; // vec4(0.0,0.0,0.0,1.0)
+      gl_PointSize = 10.0;
+    }
+  `; // 顶点着色器
+
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  `; // 片元着色器
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+
+  // 创建顶点数据
+  const points = new Float32Array([
+    -0.5, -0.5,
+     0.5, -0.5,
+     0.0,  0.5,
+  ])
+
+  // 创建缓冲区对象（内存区域）
+  const buffer = gl.createBuffer();
+  // 绑定到webgl，
+  // 参数-：gl.ARRAY_BUFFER: 表示缓冲区存储的是顶点的数据，gl.ELEMENT_ARRAY_BUFFER: 表示缓冲区存储的是顶点的索引值
+  // 参数二：buffer: 已经创建好的缓冲区对象，
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  // 将数据写入缓冲区
+  // 参数一: 类型同 gl.bindBuffer 
+  // data: 写⼊缓冲区的顶点数据，如程序中的 points
+  // type: 表示如何使⽤缓冲区对象中的数据，分为以下⼏类： gl.STATIC_DRAW: 写⼊⼀次，多次绘制，gl.STREAM_DRAW: 写⼊⼀次，绘制若干次，gl.DYNAMIC_DRAW: 写⼊多次，绘制多次
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  // 给 attribute 变量赋值
+  // 参数一：attribute 变量的存储位置
+  // 参数二： size: 指定每个顶点所使⽤数据的个数
+  // 参数三： type: 指定数据格式，gl.FLOAT：浮点型，gl.UNSIGNED_BYTE：⽆符号字节，gl.SHORT：短整型，gl.UNSIGNED_SHORT：无符号短整型，gl.INT：整型，gl.UNSIGNED_INT：无符号整型
+  // 参数四：normalized: 表示是否将数据归⼀化到 [0, 1] [-1, 1] 这个区间
+  // 参数五：stride：两个相邻顶点之间的字节数
+  // 参数六：offset：数据偏移量，（是否连续取数据）
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+  // 激活 aPosition 然后进行渲染，参数：attribute 变量的存储地址
+  gl.enableVertexAttribArray(aPosition)
+  // gl.disableVertexAttribArray(aPosition); // 使⽤此⽅法禁⽤ aPosition
+
+  // gl.vertexAttrib2f(aPosition, 0.0, 0.0)
+
+  gl.drawArrays(gl.POINTS, 0, 3);
+
+  // 使用流程： 初始化canvas-》 创建顶点数据 -》 创建缓冲区对象 -》 绑定缓冲区对象 -》 数据写入缓冲区对象 -》 将缓冲区对象赋值给attribute变量 -》 开启attribute -》 绘制
+</script>

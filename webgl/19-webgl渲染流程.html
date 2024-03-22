@@ -1,0 +1,41 @@
+<!--
+ * @LastEditors: luoxiaolei
+ * @LastEditTime: 2024-01-17 10:52:49
+ * @Description:  彩色三角形
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: gray;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  此浏览器不支持canvas
+</canvas>
+<div>
+ <p>1、设置顶点坐标</p>
+ <p>2、图元装配：将独⽴的顶点坐标装配成几何图形，图形的类别由 gl.drawArrays() 第⼀个参数确定</p>
+ <p>3、光栅化：这⼀步是将装配好的图形转换为片元。进行优化：1、剔除：对于不透明物体，背⾯对于观察者来说是不可⻅的。那么在渲染过程中，就会将不可⻅的部分剔除， 不参与绘制。节省渲染开销。2、裁剪：在可视范围之外的事物是看不到的。图形⽣成后，有的部分可能位于可视范围之外，这⼀部分会被剪裁掉，不参与绘制</p>
+ <p>4、渲染流程：所有片元经过片元着色器（颜色缓冲区）处理绘制到浏览器</p>
+ <p></p>
+ <img src="./19-流程.png" alt="" srcset="">
+</div>
+</body>
+</html>
+<script>
+
+</script>

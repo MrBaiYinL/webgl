@@ -1,0 +1,143 @@
+<!-- 图形添加背景图 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="./utils/index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas{
+      margin: 50px auto 0;
+      display: block;
+      background: yellow;
+    }
+    img {
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  此浏览器不支持canvas
+</canvas>
+<div>
+  <p>纹理坐标： 也称为 st坐标，</p>
+  <img src="./20-1纹理坐标.png" alt="" srcset="">
+  <p>纹理单元：Webgl 是通过纹理单元来管理纹理对象，每个纹理单元管理⼀张纹理图像</p>
+</div>
+</body>
+</html>
+<script>
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    // 只传递顶点数据
+    attribute vec4 aPosition;
+
+    attribute vec4 aTex; // 纹理坐标
+
+    varying vec2 vTex; 
+
+    void main() {
+      gl_Position = aPosition; // vec4(0.0,0.0,0.0,1.0)
+      vTex = vec2(aTex.x, aTex.y);
+    }
+  `; // 顶点着色器
+
+  const FRAGMENT_SHADER_SOURCE = `
+    precision lowp float;
+    uniform sampler2D uSampler; // 二维纹理定义
+    varying vec2 vTex; // 顶点着色器把 纹理坐标 传给片元着色器
+
+    void main() {
+      gl_FragColor = texture2D(uSampler, vTex);
+    }
+  `; // 片元着色器
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+  const aTex = gl.getAttribLocation(program, 'aTex');
+  const uSampler = gl.getUniformLocation(program, 'uSampler');
+
+  const points = new Float32Array([
+    -0.5,  0.5, 0.0, 1.0,
+    -0.5, -0.5, 0.0, 0.0,
+     0.5,  0.5, 1.0, 1.0,
+     0.5, -0.5, 1.0, 0.0,
+  ])
+
+  const buffer = gl.createBuffer();
+  const BYTES = points.BYTES_PER_ELEMENT;
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 4, 0);
+
+  gl.enableVertexAttribArray(aPosition)
+
+  gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, BYTES * 4, BYTES * 2);
+
+  gl.enableVertexAttribArray(aTex)
+
+  const img = new Image();
+  img.onload = function() {
+    // 创建纹理对象,主要⽤于存储纹理图像数据,可以通过 gl.deleteTexture(textrue) 来删除纹理对象
+    const texture = gl.createTexture();
+
+    // 翻转 图片 Y轴，第一个参数：翻转，第二个参数：1沿y轴翻转
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+
+    // 开启一个纹理单元，参数是纹理编号，Webgl 是通过纹理单元来管理纹理对象，每个纹理单元管理⼀张纹理图像
+    gl.activeTexture(gl.TEXTURE0);
+
+    // 纹理单元绑定纹理对象，第一个参数有以下两种：gl.TEXTURE_2D: 二维纹理 、gl.TEXTURE_CUBE_MAP: 立方体纹理，第二个参数：texture: 纹理对象
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    /*
+    处理放大缩小的逻辑，
+    第一个参数有以下两种：gl.TEXTURE_2D: 二维纹理 、gl.TEXTURE_CUBE_MAP: 立方体纹理，
+    第二个参数：gl.TEXTURE_MAG_FILTER 放⼤、gl.TEXTURE_MIN_FILTER 缩⼩、gl.TEXTURE_WRAP_S 横向（⽔平填充）、gl.TEXTURE_WRAP_T 纵向（垂直填充）
+    第三个参数：分别赋值给第二个参数中的 gl.TEXTURE_MAG_FILTER 和 gl.TEXTURE_MIN_FILTER ，gl.NEAREST 使用像素颜色值、gl.LINEAR 使用四周的加权平均值
+              分别赋值给第二个参数中的 gl.TEXTURE_WRAP_S 和 gl.TEXTURE_WRAP_T，gl.REPEAT 平铺重复、gl.MIRRORED_REPEAT 镜像对称、gl.CLAMP_TO_EDGE 边缘延伸
+    */ 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+    // 横向 纵向 平铺的方式
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+    /* 配置纹理图像
+    第一个参数 同上
+    第二个参数：level，默认为 0
+    第三个参数：图像的内部格式，gl.RGB、gl.RGBA、gl.ALPHA、gl.LUMINANCE 使用物体表面的 红绿蓝 分量的加权平均值来计算、gl.LUMINANCE_ALPHA
+    第四个参数：format 纹理的内部格式，必须和 第三个参数 相同
+    第五个参数：dataType 纹理数据的数据类型，gl.UNSIGNED_BYTE无符号整型、gl.UNSIGNED_SHORT_5_6_5、gl.UNSIGNED_SHORT_4_4_4_4、gl.UNSIGNED_SHORT_5_5_5_1
+    第六个参数：当前获取到的 image 图片对象
+    */ 
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+
+    /*
+    uniform1（数字）i（字母i）：接收的参数是整型，uniform1（数字）i（字母f）：接收的参数是浮点型
+    第二个参数：是纹理单元的index索引
+    */ 
+    gl.uniform1i(uSampler, 0);
+    // 图片的尺寸最好是2的整数幂次方，可以实现快速取值，如果不是整数次幂，则会先转换为整数次再进行取值
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  img.src = './assets/content.png'
+
+</script>
